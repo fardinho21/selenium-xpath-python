@@ -1,4 +1,4 @@
-./bin
+./bin/*
 ./chrome*
-./lib
-./lib64
+./lib/*
+./lib64/*
