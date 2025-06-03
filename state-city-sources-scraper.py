@@ -23,7 +23,7 @@ service = Service(ChromeDriverManager().install())
 driver = webdriver.Chrome(service=service, options=options)
 
 # Web-Scraping routine
-driver.get("https://www.newsbreak.com/locations/michigan-state/cities")
+driver.get("https://www.newsbreak.com/locations/")
 
 # type-hint the elements list to aid in object-property queries
 elements : list[WebElement] = driver.find_elements(By.XPATH, "//li/div/a")
