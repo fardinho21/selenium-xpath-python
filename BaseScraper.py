@@ -5,20 +5,20 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
-
 class BaseScraper:
     options:Options=None
     service:Service=None
     url:str=""
     userAgent:str="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36"
     driver: WebDriver=None
+    outputFilePath:str=""
     
     def __init__(self, service:Service=None, options:Options=None, url:str=""):
         if service:
             self.service = service
         else:
             self.service=Service(ChromeDriverManager().install())
-        if options:
+        if options is None:
             self.options=Options()
             self.options.add_argument("--headless")
             self.options.add_argument("--disable-gpu")
@@ -31,30 +31,49 @@ class BaseScraper:
         self.url=url
         self.driver=webdriver.Chrome(service=self.service, options=self.options)
         
+    def setOutputFilePath(self,path:str):
+        self.outputFilePath=path
+        
+    def setURL(self, url:str):
+        self.url=url
+        
     def _scrape(self, xPath:str) -> list[WebElement]:
         if not self.driver is None:
             self.driver.get(self.url)
             return self.driver.find_elements(By.XPATH, xPath)
+    def _quitDriver(self):
+        self.driver.quit()
+        
     
 
-class CityScraper(BaseScraper):
+class StateAndCityScraper(BaseScraper):
     def __init__(self, service:Service=None, options:Options=None, url:str=""):
         super().__init__(service, options, url)
 
-    def scrapeXPATH(self, xPath:str, attribute:str="", tagName:bool=False, text:bool=False):
+    def scrapeXPATH(self, xPath:str, attribute:str="", tagName:bool=False, text:bool=False, outputToFile:bool=False):
         elements:list[WebElement] = super()._scrape(xPath=xPath)
         e : WebElement=None
-        for e in elements:
-            try:
-                
+        output:list[str]=[]
+        try:
+            for e in elements:
                 if tagName:
                     print(e.tag_name)
-                if attribute:
+                    output.append(e.tag_name)
+                elif attribute:
                     print(e.get_attribute(attribute))
-                if text:
+                    output.append(e.get_attribute(attribute))
+                elif text:
                     print(e.text)
+                    output.append(e.text)
+            if outputToFile:    
+                with open(self.outputFilePath, "x" ) as OUT:
+                    for o in output:
+                        OUT.write(o+"\n")
+                    OUT.close()
                 
-            except Exception as E:
+        except Exception as E:
                 print(E)
                 
-        self.driver.quit()
+        
+    def doneScraping(self):
+        super()._quitDriver()
