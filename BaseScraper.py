@@ -5,6 +5,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
+import csv
+import json
 class BaseScraper:
     options:Options=None
     service:Service=None
@@ -50,11 +52,13 @@ class StateAndCityScraper(BaseScraper):
     def __init__(self, service:Service=None, options:Options=None, url:str=""):
         super().__init__(service, options, url)
 
-    def scrapeXPATH(self, xPath:str, attribute:str="", tagName:bool=False, text:bool=False, outputToFile:bool=False):
+    def scrapeXPATH(self, xPath:str, attribute:str="", tagName:bool=False, text:bool=False, outputToFile:str=""):
+        #scrape elements 
         elements:list[WebElement] = super()._scrape(xPath=xPath)
         e : WebElement=None
         output:list[str]=[]
         try:
+            #gather data from elements
             for e in elements:
                 if tagName:
                     print(e.tag_name)
@@ -65,11 +69,29 @@ class StateAndCityScraper(BaseScraper):
                 elif text:
                     print(e.text)
                     output.append(e.text)
-            if outputToFile:    
-                with open(self.outputFilePath, "x" ) as OUT:
+                    
+            #write to file
+            if outputToFile=="txt":    
+                with open(self.outputFilePath+".txt", "x" ) as OUT:
                     for o in output:
                         OUT.write(o+"\n")
                     OUT.close()
+            elif outputToFile=="csv":
+                with open(self.outputFilePath+".csv", "x", newline='') as CSV:
+                    fieldnames=['link']
+                    writer = csv.DictWriter(CSV, fieldnames=fieldnames)
+                    writer.writeheader()
+                    for o in output:
+                        writer.writerow({"link":o})
+                    CSV.close()
+            elif outputToFile=="json":
+                dataToSave:dict=dict()
+                for n,o in enumerate(output):
+                    dataToSave[n]={"link":o}
+                with open(self.outputFilePath+".json", "x") as JSON:
+                    JSON.write(json.dumps(dataToSave))
+                    JSON.close()
+                pass
                 
         except Exception as E:
                 print(E)

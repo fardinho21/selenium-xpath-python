@@ -14,7 +14,7 @@ with open('./news-sources/Newsbreak-All-States.txt', 'r') as NEWSBREAK:
     for link in NEWSBREAK:
         match:re.Match[str]=re.search(r'(locations\/)([a-z\-]*)(\/cities)', link)
         
-        gFileNames[(match.group().split("/")[1].upper()+".txt")] = link
+        gFileNames[(match.group().split("/")[1].upper())] = link
     
     NEWSBREAK.close()
     
@@ -23,7 +23,7 @@ stateAndCityScraper:StateAndCityScraper=StateAndCityScraper()
 for stateFileName, newsBreakLink in gFileNames.items():
     stateAndCityScraper.setURL(newsBreakLink[:-1])
     stateAndCityScraper.setOutputFilePath("./news-sources/"+stateFileName)
-    stateAndCityScraper.scrapeXPATH("//li/div/a", attribute="href", outputToFile=True)
+    stateAndCityScraper.scrapeXPATH("//li/div/a", attribute="href", outputToFile="json")
     time.sleep(120)
 
 stateAndCityScraper.doneScraping()
