@@ -23,7 +23,7 @@ stateAndCityScraper:StateAndCityScraper=StateAndCityScraper()
 for stateFileName, newsBreakLink in gFileNames.items():
     stateAndCityScraper.setURL(newsBreakLink[:-1])
     stateAndCityScraper.setOutputFilePath("./news-sources/"+stateFileName)
-    stateAndCityScraper.scrapeXPATH("//li/div/a", attribute="href", outputToFile="json")
+    stateAndCityScraper.scrapeXPATH("//li/div/a", attribute="href", fileTypeOutput="json")
     time.sleep(120)
 
 stateAndCityScraper.doneScraping()

@@ -46,8 +46,12 @@ class BaseScraper:
     def _quitDriver(self):
         self.driver.quit()
         
-    
-    def scrapeXPATH(self, xPath:str, attribute:str="", tagName:bool=False, text:bool=False, outputToFile:str=""):
+    '''
+        Scrapes elements specified by an XPath
+        and optionally gathers the element's attribute, tag name, or text.
+        It also optionally outputs the contents of the data to either a txt, csv, or json file.
+    '''
+    def scrapeXPATH(self, xPath:str, attribute:str="", tagName:bool=False, text:bool=False, fileTypeOutput:str=""):
         #scrape elements 
         elements:list[WebElement] = self._scrape(xPath=xPath)
         e : WebElement=None
@@ -66,30 +70,37 @@ class BaseScraper:
                     output.append(e.text)
                     
             #write to file
-            if outputToFile=="txt":    
-                with open(self.outputFilePath+".txt", "x" ) as OUT:
-                    for o in output:
-                        OUT.write(o+"\n")
-                    OUT.close()
-            elif outputToFile=="csv":
-                with open(self.outputFilePath+".csv", "x", newline='') as CSV:
-                    fieldnames=['link']
-                    writer = csv.DictWriter(CSV, fieldnames=fieldnames)
-                    writer.writeheader()
-                    for o in output:
-                        writer.writerow({"link":o})
-                    CSV.close()
-            elif outputToFile=="json":
-                dataToSave:dict=dict()
-                for n,o in enumerate(output):
-                    dataToSave[n]={"link":o}
-                with open(self.outputFilePath+".json", "x") as JSON:
-                    JSON.write(json.dumps(dataToSave))
-                    JSON.close()
-                pass
+            if fileTypeOutput:
+                self.outputToFile(output, fileTypeOutput)
+                
                 
         except Exception as E:
                 print(E)
+                
+    def outputToFile(self, data:list[str], fileType:str="txt"):
+        if fileType=="txt":    
+                with open(self.outputFilePath+".txt", "x" ) as OUT:
+                    for o in data:
+                        OUT.write(o+"\n")
+                    OUT.close()
+        elif fileType=="csv":
+            with open(self.outputFilePath+".csv", "x", newline='') as CSV:
+                fieldnames=['link']
+                writer = csv.DictWriter(CSV, fieldnames=fieldnames)
+                writer.writeheader()
+                for o in data:
+                    writer.writerow({"link":o})
+                CSV.close()
+        elif fileType=="json":
+            dataToSave:dict=dict()
+            for n,o in enumerate(data):
+                dataToSave[n]={"link":o}
+            with open(self.outputFilePath+".json", "x") as JSON:
+                JSON.write(json.dumps(dataToSave))
+                JSON.close()
+        else:
+            print("File type not supported.")
+        
         
     
 
