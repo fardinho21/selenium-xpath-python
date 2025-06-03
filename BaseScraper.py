@@ -33,16 +33,31 @@ class BaseScraper:
         self.url=url
         self.driver=webdriver.Chrome(service=self.service, options=self.options)
         
+    '''
+        Sets the output file path member variable.
+    '''
     def setOutputFilePath(self,path:str):
         self.outputFilePath=path
         
+    '''
+        Sets the URL member variable
+    '''
     def setURL(self, url:str):
         self.url=url
-        
+
+    '''
+        Scrapes elements via XPath from the URL provided at construction.
+        Returns a list of WebElements
+    '''
     def _scrape(self, xPath:str) -> list[WebElement]:
         if not self.driver is None:
             self.driver.get(self.url)
             return self.driver.find_elements(By.XPATH, xPath)
+        
+    '''
+        Quits the webdriver. This method should be called when
+        finished scraping.
+    '''
     def _quitDriver(self):
         self.driver.quit()
         
@@ -76,7 +91,10 @@ class BaseScraper:
                 
         except Exception as E:
                 print(E)
-                
+    '''
+        Writes scraped data to an output file of a specified format.
+        Supported file types are txt, csv, and json.
+    '''   
     def outputToFile(self, data:list[str], fileType:str="txt"):
         if fileType=="txt":    
                 with open(self.outputFilePath+".txt", "x" ) as OUT:
