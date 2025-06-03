@@ -47,14 +47,9 @@ class BaseScraper:
         self.driver.quit()
         
     
-
-class StateAndCityScraper(BaseScraper):
-    def __init__(self, service:Service=None, options:Options=None, url:str=""):
-        super().__init__(service, options, url)
-
     def scrapeXPATH(self, xPath:str, attribute:str="", tagName:bool=False, text:bool=False, outputToFile:str=""):
         #scrape elements 
-        elements:list[WebElement] = super()._scrape(xPath=xPath)
+        elements:list[WebElement] = self._scrape(xPath=xPath)
         e : WebElement=None
         output:list[str]=[]
         try:
@@ -95,7 +90,13 @@ class StateAndCityScraper(BaseScraper):
                 
         except Exception as E:
                 print(E)
-                
+        
+    
+
+class StateAndCityScraper(BaseScraper):
+    def __init__(self, service:Service=None, options:Options=None, url:str=""):
+        super().__init__(service, options, url)
+               
         
     def doneScraping(self):
         super()._quitDriver()
