@@ -2,3 +2,7 @@
 ./chrome*
 ./lib/*
 ./lib64/*
+bin
+lib
+lib64
+__pycache__
