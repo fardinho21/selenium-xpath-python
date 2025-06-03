@@ -7,6 +7,7 @@ from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 import csv
 import json
+import xml.etree.ElementTree as XML_ETREE
 class BaseScraper:
     options:Options=None
     service:Service=None
@@ -64,7 +65,7 @@ class BaseScraper:
     '''
         Scrapes elements specified by an XPath
         and optionally gathers the element's attribute, tag name, or text.
-        It also optionally outputs the contents of the data to either a txt, csv, or json file.
+        It also optionally outputs the contents of the data to either a txt, csv, xml, or json file.
     '''
     def scrapeXPATH(self, xPath:str, attribute:str="", tagName:bool=False, text:bool=False, fileTypeOutput:str=""):
         #scrape elements 
@@ -93,10 +94,10 @@ class BaseScraper:
                 print(E)
     '''
         Writes scraped data to an output file of a specified format.
-        Supported file types are txt, csv, and json.
+        Supported file types are txt, csv, xml, and json.
     '''   
     def outputToFile(self, data:list[str], fileType:str="txt"):
-        if fileType=="txt":    
+        if fileType=="txt":
                 with open(self.outputFilePath+".txt", "x" ) as OUT:
                     for o in data:
                         OUT.write(o+"\n")
@@ -116,6 +117,16 @@ class BaseScraper:
             with open(self.outputFilePath+".json", "x") as JSON:
                 JSON.write(json.dumps(dataToSave))
                 JSON.close()
+        elif fileType=="xml":
+            root = XML_ETREE.Element("CityNewsSources")
+            for o in data:
+                
+                newsSource = XML_ETREE.Element("news-source")
+                newsSource.text = o
+                root.append(newsSource)
+                
+            tree =XML_ETREE.ElementTree(root)
+            tree.write(self.outputFilePath+".xml")
         else:
             print("File type not supported.")
         
