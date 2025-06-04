@@ -5,9 +5,17 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
+#for dynamically loaded website support
+from selenium.webdriver.support import expected_conditions as EXPECTED_CONDS
+from selenium.webdriver.support.ui import WebDriverWait
+
+#for output file types support
 import csv
 import json
 import xml.etree.ElementTree as XML_ETREE
+
+#other imports
+import time
 
 
 '''
@@ -21,8 +29,9 @@ class BaseScraper:
     userAgent:str="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36"
     driver: WebDriver=None
     outputFilePath:str=""
+    scrapeDynamicSite:bool=False
     
-    def __init__(self, service:Service=None, options:Options=None, url:str=""):
+    def __init__(self, service:Service=None, options:Options=None, url:str="", dynamicSite:bool=False):
         if service:
             self.service = service
         else:
@@ -38,6 +47,7 @@ class BaseScraper:
             self.options=options
             
         self.url=url
+        self.scrapeDynamicSite=dynamicSite
         self.driver=webdriver.Chrome(service=self.service, options=self.options)
         
     '''
@@ -72,8 +82,13 @@ class BaseScraper:
         Scrapes elements specified by an XPath
         and optionally gathers the element's attribute, tag name, or text.
         It also optionally outputs the contents of the data to either a txt, csv, xml, or json file.
+        Compatible with static web pages.
     '''
     def scrapeXPATH(self, xPath:str, attribute:str="", tagName:bool=False, text:bool=False, fileTypeOutput:str=""):
+        if self.scrapeDynamicSite is False:
+            print("Website contains dynamically loaded content.")
+            return
+    
         #scrape elements 
         elements:list[WebElement] = self._scrape(xPath=xPath)
         e : WebElement=None
@@ -98,6 +113,26 @@ class BaseScraper:
                 
         except Exception as E:
                 print(E)
+    
+    def scrapeXPATH_Dynamic(self, xPath:str, attribute:str="", tagName:bool=False, text:bool=False, fileTypeOutput:str=""):
+            
+        self.driver.get(self.url)
+        WebDriverWait(self.driver, 10).until(EXPECTED_CONDS.presence_of_element_located((By.XPATH,"//div[contains(@class, 'thumbnail')]")))
+        while True:
+            try:
+                load_button = WebDriverWait(self.driver, 5).until(EXPECTED_CONDS.element_to_be_clickable((By.XPATH, "//div/a[text()='More']")))
+                self.driver.execute_script("arguments[0].click();", load_button)
+                time.sleep(2)
+            except Exception as E:
+                print(E)
+                break
+            
+        products=self.driver.find_elements(By.XPATH, "//div[contains(@class,'thumbnail')]")
+        for p in products:
+            print(p.find_element(By.XPATH, ".//h4/a[@itemprop='name']").text)
+            print(p.find_element(By.XPATH, ".//h4[@class='price float-end pull-right']").text)
+        
+    
     '''
         Writes scraped data to an output file of a specified format.
         Supported file types are txt, csv, xml, and json.
