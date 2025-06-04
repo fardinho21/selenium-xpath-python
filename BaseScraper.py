@@ -8,6 +8,12 @@ from webdriver_manager.chrome import ChromeDriverManager
 import csv
 import json
 import xml.etree.ElementTree as XML_ETREE
+
+
+'''
+    BaseScraper base class. Provides basic set up and utility functions
+    for scraping data and file-output features 
+'''
 class BaseScraper:
     options:Options=None
     service:Service=None
@@ -131,12 +137,3 @@ class BaseScraper:
             print("File type not supported.")
         
         
-    
-
-class StateAndCityScraper(BaseScraper):
-    def __init__(self, service:Service=None, options:Options=None, url:str=""):
-        super().__init__(service, options, url)
-               
-        
-    def doneScraping(self):
-        super()._quitDriver()
