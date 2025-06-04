@@ -114,15 +114,32 @@ class BaseScraper:
         except Exception as E:
                 print(E)
     
-    def scrapeXPATH_Dynamic(self, xPath:str, attribute:str="", tagName:bool=False, text:bool=False, fileTypeOutput:str=""):
+    '''
+        Scrapes dynamically loaded content.
+        loaderType specifies how the dynamic content is loaded (button, scroll, pagination)
+        
+    '''
+    def scrapeXPATH_Dynamic(self, loaderType:str="button"):
             
         self.driver.get(self.url)
         WebDriverWait(self.driver, 10).until(EXPECTED_CONDS.presence_of_element_located((By.XPATH,"//div[contains(@class, 'thumbnail')]")))
+
+        final_height = self.driver.execute_script("return document.body.scrollHeight") if loaderType=="scroll" else 0
         while True:
             try:
-                load_button = WebDriverWait(self.driver, 5).until(EXPECTED_CONDS.element_to_be_clickable((By.XPATH, "//div/a[text()='More']")))
-                self.driver.execute_script("arguments[0].click();", load_button)
-                time.sleep(2)
+                if loaderType=="button":
+                    load_button = WebDriverWait(self.driver, 5).until(EXPECTED_CONDS.element_to_be_clickable((By.XPATH, "//div/a[text()='More']")))
+                    self.driver.execute_script("arguments[0].click();", load_button)
+                    time.sleep(2)
+                elif loaderType=="scroll":
+                    self.driver.execute_script("return window.scrollTo(0, document.body.scrollHeight);")
+                    time.sleep(2)
+                    next_height = self.driver.execute_script("return document.body.scrollHeight")
+                    if next_height == final_height:
+                        break
+                    final_height=next_height
+                elif loaderType=="pagination":
+                    pass 
             except Exception as E:
                 print(E)
                 break
