@@ -118,7 +118,7 @@ class BaseScraper:
     def scrapeXPATH_DynamicLoadButton(self):
         products:list[WebElement]=[]
         self.driver.get(self.url)
-        WebDriverWait(self.driver, 10).until(EXPECTED_CONDS.presence_of_element_located((By.XPATH,"//div[contains(@class, 'thumbnail')]")))
+        WebDriverWait(self.driver, 5).until(EXPECTED_CONDS.presence_of_element_located((By.XPATH,"//div[contains(@class, 'thumbnail')]")))
 
         while True:
             try:
@@ -156,13 +156,22 @@ class BaseScraper:
         
     
     def scrapeXPATH_DynamicPagination(self):
+        products:list[WebElement]=[]
+        self.driver.get(self.url)
+        WebDriverWait(self.driver, 10).until(EXPECTED_CONDS.presence_of_element_located((By.XPATH, "//div[@class='card thumbnail']")))
         #not working
-        next_button = self.driver.find_element(By.XPATH, "//div/nav/ul[@class='pagination']/li/a[contains(@rel, 'next')]")
-        products=self.driver.find_elements(By.XPATH, "//div[contains(@class,'thumbnail')]")
-        self.printScrapedElements(products)
-        next_button.click()
-        time.sleep(2)
-        pass
+        while True:
+            try:
+                
+                products=self.driver.find_elements(By.XPATH, "//div[contains(@class,'thumbnail')]")
+                self.printScrapedElements(products, "//h4[@class='price float-end card-title pull-right']")
+                prexpath="//div[@id='static-pagination']/nav/ul[@class='pagination']/li/"
+                pagination_next = self.driver.find_element(By.XPATH, prexpath+"a[@rel='next']")
+                pagination_next.click()
+                time.sleep(1)
+            except Exception as E:
+                print("No more page")
+                break
 
     
     '''
