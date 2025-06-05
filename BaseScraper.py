@@ -29,9 +29,8 @@ class BaseScraper:
     userAgent:str="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36"
     driver: WebDriver=None
     outputFilePath:str=""
-    scrapeDynamicSite:bool=False
     
-    def __init__(self, service:Service=None, options:Options=None, url:str="", dynamicSite:bool=False):
+    def __init__(self, service:Service=None, options:Options=None, url:str=""):
         if service:
             self.service = service
         else:
@@ -47,7 +46,6 @@ class BaseScraper:
             self.options=options
             
         self.url=url
-        self.scrapeDynamicSite=dynamicSite
         self.driver=webdriver.Chrome(service=self.service, options=self.options)
         
     '''
@@ -109,46 +107,63 @@ class BaseScraper:
             #write to file
             if fileTypeOutput:
                 self.outputToFile(output, fileTypeOutput)
-                
-                
+                            
         except Exception as E:
                 print(E)
     
     '''
         Scrapes dynamically loaded content.
         loaderType specifies how the dynamic content is loaded (button, scroll, pagination)
-        
     '''
-    def scrapeXPATH_Dynamic(self, loaderType:str="button"):
-            
+    def scrapeXPATH_DynamicLoadButton(self):
+        products:list[WebElement]=[]
         self.driver.get(self.url)
         WebDriverWait(self.driver, 10).until(EXPECTED_CONDS.presence_of_element_located((By.XPATH,"//div[contains(@class, 'thumbnail')]")))
 
-        final_height = self.driver.execute_script("return document.body.scrollHeight") if loaderType=="scroll" else 0
         while True:
             try:
-                if loaderType=="button":
-                    load_button = WebDriverWait(self.driver, 5).until(EXPECTED_CONDS.element_to_be_clickable((By.XPATH, "//div/a[text()='More']")))
-                    self.driver.execute_script("arguments[0].click();", load_button)
-                    time.sleep(2)
-                elif loaderType=="scroll":
-                    self.driver.execute_script("return window.scrollTo(0, document.body.scrollHeight);")
-                    time.sleep(2)
-                    next_height = self.driver.execute_script("return document.body.scrollHeight")
-                    if next_height == final_height:
-                        break
-                    final_height=next_height
-                elif loaderType=="pagination":
-                    pass 
+                load_button = WebDriverWait(self.driver, 5).until(EXPECTED_CONDS.element_to_be_clickable((By.XPATH, "//div/a[text()='More']")))
+                self.driver.execute_script("arguments[0].click();", load_button)
+                time.sleep(2)
+
             except Exception as E:
                 print(E)
                 break
             
+
         products=self.driver.find_elements(By.XPATH, "//div[contains(@class,'thumbnail')]")
-        for p in products:
-            print(p.find_element(By.XPATH, ".//h4/a[@itemprop='name']").text)
-            print(p.find_element(By.XPATH, ".//h4[@class='price float-end pull-right']").text)
+        self.printScrapedElements(products, ".//h4[@class='price float-end pull-right']")
+            
+    def scrapeXPATH_DynamicScroll(self):
+        products:list[WebElement]=[]
+        self.driver.get(self.url)
+        WebDriverWait(self.driver, 10).until(EXPECTED_CONDS.presence_of_element_located((By.XPATH, "//div[contains(@class, 'thumbnail')]")))
+        final_height = self.driver.execute_script("return document.body.scrollHeight")
         
+        while True:
+            try:
+                self.driver.execute_script("return window.scrollTo(0, document.body.scrollHeight);")
+                time.sleep(2)
+                next_height = self.driver.execute_script("return document.body.scrollHeight")
+                if next_height == final_height:
+                    break
+                final_height=next_height
+            except Exception as E:
+                print(E)
+                break
+        products=self.driver.find_elements(By.XPATH, "//div[contains(@class,'thumbnail')]")
+        self.printScrapedElements(products, ".//h4[@class='price float-end pull-right']")
+        
+    
+    def scrapeXPATH_DynamicPagination(self):
+        #not working
+        next_button = self.driver.find_element(By.XPATH, "//div/nav/ul[@class='pagination']/li/a[contains(@rel, 'next')]")
+        products=self.driver.find_elements(By.XPATH, "//div[contains(@class,'thumbnail')]")
+        self.printScrapedElements(products)
+        next_button.click()
+        time.sleep(2)
+        pass
+
     
     '''
         Writes scraped data to an output file of a specified format.
@@ -188,4 +203,7 @@ class BaseScraper:
         else:
             print("File type not supported.")
         
-        
+    def printScrapedElements(self, elements:list[WebElement], xPath:str):
+        for e in elements:
+            print(e.find_element(By.XPATH, ".//h4/a[@itemprop='name']").text)
+            print(e.find_element(By.XPATH, xPath).text)
