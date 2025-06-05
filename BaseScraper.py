@@ -115,14 +115,21 @@ class BaseScraper:
         Scrapes dynamically loaded content.
         loaderType specifies how the dynamic content is loaded (button, scroll, pagination)
     '''
-    def scrapeXPATH_DynamicLoadButton(self):
+    def scrapeXPATH_DynamicLoadButton(self, xPathOfPresenceElement:str="", xPathOfLoadMoreElement:str="", xPathOfElementToScrape:str=""):
+        if not xPathOfPresenceElement:
+            print("xPath of presence element not specified.")
+            return
+        if not xPathOfLoadMoreElement:
+            print("xPath of 'Load More' element not specified.")
+            return 
+        
         products:list[WebElement]=[]
         self.driver.get(self.url)
-        WebDriverWait(self.driver, 5).until(EXPECTED_CONDS.presence_of_element_located((By.XPATH,"//div[contains(@class, 'thumbnail')]")))
+        WebDriverWait(self.driver, 5).until(EXPECTED_CONDS.presence_of_element_located((By.XPATH, xPathOfPresenceElement)))
 
         while True:
             try:
-                load_button = WebDriverWait(self.driver, 5).until(EXPECTED_CONDS.element_to_be_clickable((By.XPATH, "//div/a[text()='More']")))
+                load_button = WebDriverWait(self.driver, 5).until(EXPECTED_CONDS.element_to_be_clickable((By.XPATH, xPathOfLoadMoreElement)))
                 self.driver.execute_script("arguments[0].click();", load_button)
                 time.sleep(2)
 
@@ -131,13 +138,20 @@ class BaseScraper:
                 break
             
 
-        products=self.driver.find_elements(By.XPATH, "//div[contains(@class,'thumbnail')]")
-        self.printScrapedElements(products, ".//h4[@class='price float-end pull-right']")
+        products=self.driver.find_elements(By.XPATH, xPathOfPresenceElement)
+        self.printScrapedElements(products, xPathOfElementToScrape)
             
-    def scrapeXPATH_DynamicScroll(self):
+    def scrapeXPATH_DynamicScroll(self, xPathOfPresenceElement:str="", xPathOfElementToScrape:str=""):
+        if not xPathOfPresenceElement:
+            print("xPath of presence element not specified.")
+            return
+        if not xPathOfElementToScrape:
+            print("xPath of element to scrape not specified")
+            return
+        
         products:list[WebElement]=[]
         self.driver.get(self.url)
-        WebDriverWait(self.driver, 10).until(EXPECTED_CONDS.presence_of_element_located((By.XPATH, "//div[contains(@class, 'thumbnail')]")))
+        WebDriverWait(self.driver, 10).until(EXPECTED_CONDS.presence_of_element_located((By.XPATH, xPathOfPresenceElement)))
         final_height = self.driver.execute_script("return document.body.scrollHeight")
         
         while True:
@@ -151,26 +165,33 @@ class BaseScraper:
             except Exception as E:
                 print(E)
                 break
-        products=self.driver.find_elements(By.XPATH, "//div[contains(@class,'thumbnail')]")
-        self.printScrapedElements(products, ".//h4[@class='price float-end pull-right']")
+        products=self.driver.find_elements(By.XPATH, xPathOfPresenceElement)
+        self.printScrapedElements(products, xPathOfElementToScrape)
         
     
-    def scrapeXPATH_DynamicPagination(self):
+    def scrapeXPATH_DynamicPagination(self, xPathOfPresenceElement:str="", xPathOfPaginationElement:str="", xPathOfElementToScrape:str=""):
+        if not xPathOfPresenceElement:
+            print("xPath of presence element not specified.")
+            return
+        if not xPathOfPaginationElement:
+            print("xPath of pagination element not specified.")
+            return
+        if not xPathOfElementToScrape:
+            print("xPath of element to scrape not specified.")
+            return
         products:list[WebElement]=[]
         self.driver.get(self.url)
-        WebDriverWait(self.driver, 10).until(EXPECTED_CONDS.presence_of_element_located((By.XPATH, "//div[@class='card thumbnail']")))
-        #not working
+        WebDriverWait(self.driver, 10).until(EXPECTED_CONDS.presence_of_element_located((By.XPATH, xPathOfPresenceElement)))
+        
         while True:
             try:
-                
-                products=self.driver.find_elements(By.XPATH, "//div[contains(@class,'thumbnail')]")
-                self.printScrapedElements(products, "//h4[@class='price float-end card-title pull-right']")
-                prexpath="//div[@id='static-pagination']/nav/ul[@class='pagination']/li/"
-                pagination_next = self.driver.find_element(By.XPATH, prexpath+"a[@rel='next']")
+                products=self.driver.find_elements(By.XPATH, xPathOfPresenceElement)
+                self.printScrapedElements(products, xPathOfElementToScrape)
+                pagination_next = self.driver.find_element(By.XPATH, xPathOfPaginationElement)
                 pagination_next.click()
                 time.sleep(1)
             except Exception as E:
-                print("No more page")
+                print("Pagination End")
                 break
 
     
