@@ -1,5 +1,6 @@
 from BaseScraper import BaseScraper
 from selenium.webdriver.remote.webdriver import WebDriver
+from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EXPECTED_CONDS
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
@@ -47,19 +48,7 @@ class BeautifulSoupScraper(BaseScraper):
             
         html=self.driver.page_source
         self.soup=BeautifulSoup(html, 'html.parser')
-        prices:str=[]
-        names:str=[]
-        for tag,attributes in elementsToScrape.items():
-            elements: _QueryResults = self.soup.find_all(tag, class_=attributes.split(" "))
-            for result in elements:
-                if tag=="h4":
-                    prices.append(result.get_text())
-                elif tag=="a":
-                    names.append(result.get_text())
-        
-        pairs=zip(names,prices)
-        for e in pairs:
-            print(e)
+        self.printScrapedElements(elementsToScrape=elementsToScrape)
                 
     def scrapeBeautifulSoup_DynamicScroll(self, presenceElementCSS:str="", elementsToScrape:dict[str,str]=dict()):
         
@@ -81,6 +70,26 @@ class BeautifulSoupScraper(BaseScraper):
         html=self.driver.page_source
         self.soup=BeautifulSoup(html, 'html.parser')
         self.printScrapedElements(elementsToScrape)
+
+    def scrapeBeautifulSoup_DynamicPagination(self, presenceElementCSS:str="", elementsToScrape:dict[str,str]=dict()):
+        
+        self.driver.get(self.url)
+
+        WebDriverWait(self.driver, 10).until(EXPECTED_CONDS.presence_of_element_located((By.CSS_SELECTOR, presenceElementCSS)))
+        while True:
+            try:
+                time.sleep(2)
+                html=self.driver.page_source
+                self.soup=BeautifulSoup(html, 'html.parser')
+                self.printScrapedElements(elementsToScrape)
+                pagination_next:WebElement=self.driver.find_element(By.CSS_SELECTOR, presenceElementCSS)
+                self.driver.execute_script("arguments[0].click();", pagination_next)
+            except Exception as E:
+                print("Pagination End")
+                break
+
+
+
 
     def printScrapedElements(self, elementsToScrape:dict[str,str]=dict()):
         prices:str=[]

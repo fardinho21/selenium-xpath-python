@@ -4,8 +4,8 @@ from BeautifulSoupScraper import BeautifulSoupScraper
 def main():
     
     # loadbybutton="https://webscraper.io/test-sites/e-commerce/more/phones/touch"
-    loadbyscrolling="https://webscraper.io/test-sites/e-commerce/scroll/phones/touch"
-    # loadbypagination="https://webscraper.io/test-sites/e-commerce/static/phones/touch"
+    # loadbyscrolling="https://webscraper.io/test-sites/e-commerce/scroll/phones/touch"
+    loadbypagination="https://webscraper.io/test-sites/e-commerce/static/phones/touch"
     # print('Scraping Dynamic Content - Load Button')
     # xPathScraper = XPathScraper(url=loadbybutton)
     # xPathScraper.scrapeXPATH_DynamicLoadButton(\
@@ -45,12 +45,19 @@ def main():
     #     presenceElementCSS="a.ecomerce-items-scroll-more",\
     #         elementsToScrape=elementsToScrape)
     
-    print('Scraping Dynamic Content - Load by Scroll')
-    bsScraper = BeautifulSoupScraper(url=loadbyscrolling)
+    # print('Scraping Dynamic Content - Load by Scroll')
+    # bsScraper = BeautifulSoupScraper(url=loadbyscrolling)
+    # elementsToScrape:dict[str,str]={"h4":"price float-end card-title pull-right", "a":"title"}
+    
+    # bsScraper.scrapeBeautifulSoup_DynamicScroll(presenceElementCSS="div.row.ecomerce-items.ecomerce-items-scroll",\
+    #     elementsToScrape=elementsToScrape)
+    print('Scraping Dynamic Content - Load by Pagination')
+    bsScraper = BeautifulSoupScraper(url=loadbypagination)
     elementsToScrape:dict[str,str]={"h4":"price float-end card-title pull-right", "a":"title"}
     
-    bsScraper.scrapeBeautifulSoup_DynamicScroll(presenceElementCSS="div.row.ecomerce-items.ecomerce-items-scroll",\
+    bsScraper.scrapeBeautifulSoup_DynamicPagination(presenceElementCSS="a[rel='next']",\
         elementsToScrape=elementsToScrape)
+    
     bsScraper._quitDriver()
 
 
