@@ -61,6 +61,38 @@ class BeautifulSoupScraper(BaseScraper):
         for e in pairs:
             print(e)
                 
-            
+    def scrapeBeautifulSoup_DynamicScroll(self, presenceElementCSS:str="", elementsToScrape:dict[str,str]=dict()):
         
-        pass
+        self.driver.get(self.url)
+
+        WebDriverWait(self.driver, 10).until(EXPECTED_CONDS.presence_of_element_located((By.CSS_SELECTOR, presenceElementCSS)))
+        final_height = self.driver.execute_script("return document.body.scrollHeight")
+        while True:
+            try:
+                self.driver.execute_script("return window.scrollTo(0, document.body.scrollHeight);")
+                time.sleep(2)
+                next_height = self.driver.execute_script("return document.body.scrollHeight")
+                if next_height==final_height:
+                    break
+                final_height=next_height
+            except Exception as E:
+                print(E)
+                break
+        html=self.driver.page_source
+        self.soup=BeautifulSoup(html, 'html.parser')
+        self.printScrapedElements(elementsToScrape)
+
+    def printScrapedElements(self, elementsToScrape:dict[str,str]=dict()):
+        prices:str=[]
+        names:str=[]
+        for tag,attributes in elementsToScrape.items():
+            elements: _QueryResults = self.soup.find_all(tag, class_=attributes.split(" "))
+            for result in elements:
+                if tag=="h4":
+                    prices.append(result.get_text())
+                elif tag=="a":
+                    names.append(result.get_text())
+        
+        pairs=zip(names,prices)
+        for e in pairs:
+            print(e)
