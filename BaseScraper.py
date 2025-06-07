@@ -122,6 +122,9 @@ class BaseScraper:
         if not xPathOfLoadMoreElement:
             print("xPath of 'Load More' element not specified.")
             return 
+        if not xPathOfElementToScrape:
+            print('xPath of element to scrape not specified')
+            return
         
         products:list[WebElement]=[]
         self.driver.get(self.url)
@@ -139,7 +142,8 @@ class BaseScraper:
             
 
         products=self.driver.find_elements(By.XPATH, xPathOfPresenceElement)
-        self.printScrapedElements(products, xPathOfElementToScrape)
+        for p in products:
+            print(p.find_element(By.XPATH, xPathOfElementToScrape).text)
             
     def scrapeXPATH_DynamicScroll(self, xPathOfPresenceElement:str="", xPathOfElementToScrape:str=""):
         if not xPathOfPresenceElement:
@@ -166,10 +170,10 @@ class BaseScraper:
                 print(E)
                 break
         products=self.driver.find_elements(By.XPATH, xPathOfPresenceElement)
-        self.printScrapedElements(products, xPathOfElementToScrape)
+        for p in products:
+            print(p.find_element(By.XPATH, xPathOfElementToScrape).text)
         
-    
-    def scrapeXPATH_DynamicPagination(self, xPathOfPresenceElement:str="", xPathOfPaginationElement:str="", xPathOfElementToScrape:str=""):
+    def scrapeXPATH_DynamicPagination(self, xPathOfPresenceElement:str="", xPathOfPaginationElement:str="", xPathOfElementToScrape:str="", xPathOther:list[str]=[]):
         if not xPathOfPresenceElement:
             print("xPath of presence element not specified.")
             return
@@ -181,18 +185,22 @@ class BaseScraper:
             return
         products:list[WebElement]=[]
         self.driver.get(self.url)
-        WebDriverWait(self.driver, 10).until(EXPECTED_CONDS.presence_of_element_located((By.XPATH, xPathOfPresenceElement)))
-        
+        WebDriverWait(self.driver, 10).until(EXPECTED_CONDS.presence_of_all_elements_located((By.XPATH, xPathOfPresenceElement)))
         while True:
             try:
-                products=self.driver.find_elements(By.XPATH, xPathOfPresenceElement)
-                self.printScrapedElements(products, xPathOfElementToScrape)
+                catalog:WebElement=self.driver.find_element(By.XPATH, xPathOfPresenceElement)
+                products=catalog.find_elements(By.XPATH, xPathOfElementToScrape)
+                for p in products:
+                    print(p.text)
                 pagination_next = self.driver.find_element(By.XPATH, xPathOfPaginationElement)
-                pagination_next.click()
+                self.driver.execute_script("arguments[0].click();", pagination_next)
                 time.sleep(1)
             except Exception as E:
+                # print(E)
                 print("Pagination End")
                 break
+            
+
 
     
     '''
@@ -233,7 +241,12 @@ class BaseScraper:
         else:
             print("File type not supported.")
         
-    def printScrapedElements(self, elements:list[WebElement], xPath:str):
+    def printScrapedElements(self, elements:list[WebElement], xPathsOfTextContainingElementsToScrape:list[str]=[]):
+        print(len(xPathsOfTextContainingElementsToScrape))
+        if len(xPathsOfTextContainingElementsToScrape) == 0:
+            print("No paths of text containing elements to scrape provided")
+            return
+        
         for e in elements:
-            print(e.find_element(By.XPATH, ".//h4/a[@itemprop='name']").text)
-            print(e.find_element(By.XPATH, xPath).text)
+            for xp in xPathsOfTextContainingElementsToScrape:
+                print(e.find_element(By.XPATH, xp).text)
