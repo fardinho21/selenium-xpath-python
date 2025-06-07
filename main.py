@@ -28,6 +28,7 @@ def main():
     #                 xPathOther=["//h4[@class='price float-end card-title pull-right']"])
     
     bbcShopPagination="https://shop.bbc.com/collections/merchandise"
+    print('Scraping Dynamic Content - Pagination')
     baseScraper=BaseScraper(url=bbcShopPagination)
     baseScraper.scrapeXPATH_DynamicPagination(\
         xPathOfPresenceElement="//div[@id='bc-sf-filter-products']", \
