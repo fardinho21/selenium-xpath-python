@@ -1,0 +1,10 @@
+Sources with no mentioning of "spiders", "crawlers", "robots" or similar terminology in their TOS
+https://www.freep.com/
+https://www.detroitnews.com/
+https://www.michigandaily.com/
+https://www.abc12.com/
+https://www.oakgov.com/home
+https://www.hillsdale.net/
+
+Sources that require permission to scrape their data
+https://www.fox47news.com/
