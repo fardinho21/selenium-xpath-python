@@ -27,15 +27,15 @@ class BaseScraper:
             self.service = service
         else:
             self.service=Service(ChromeDriverManager().install())
-        if options is None:
+        if options:
+            self.options=options
+        else:
             self.options=Options()
             self.options.add_argument("--headless")
             self.options.add_argument("--disable-gpu")
             self.options.add_argument("--no-sandbox")
             self.options.add_argument("--window-size=1920,1080")
             self.options.add_argument(f"user-agent={self.userAgent}")
-        else:
-            self.options=options
             
         self.url=url
         self.driver=webdriver.Chrome(service=self.service, options=self.options)
