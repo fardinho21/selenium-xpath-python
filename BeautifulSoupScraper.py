@@ -12,26 +12,26 @@ from bs4._typing import _QueryResults
 #other imports
 import time
 
-
 class BeautifulSoupScraper(BaseScraper):
     soup:BeautifulSoup=None
     def __init__(self, service:Service=None, options:Options=None, url:str=""):
         super().__init__(service, options, url)
         
-        
     def scrapeBeautifulSoupStatic(self, htmlElementTag:str="", htmlClassAttributes:str=""):
         self.driver.get(self.url)
-        time.sleep(3)
-        
-
+        # time.sleep(100)
+        WebDriverWait(self.driver, 10).until(EXPECTED_CONDS.presence_of_element_located((By.CSS_SELECTOR, htmlElementTag+"."+htmlClassAttributes)))
         html=self.driver.page_source
         self.soup=BeautifulSoup(html, 'html.parser')
-        
-        if htmlClassAttributes:
-            elements: _QueryResults = self.soup.find_all(htmlElementTag, class_=htmlClassAttributes.split(" "))
-            for result in elements:
-                print(result.get_text())
-
+        try:
+            
+            if htmlClassAttributes:
+                elements: _QueryResults = self.soup.find_all(htmlElementTag,    class_=htmlClassAttributes.split(" "))
+                # print(elements)
+                for result in elements:
+                    print(result.get_text())
+        except Exception as E:
+            print(E)
 
     def scrapeBeautifulSoup_DynamicLoadButton(self, presenceElementCSS:str="", elementsToScrape:dict[str,str]=dict()):
         
@@ -87,9 +87,6 @@ class BeautifulSoupScraper(BaseScraper):
             except Exception as E:
                 print("Pagination End")
                 break
-
-
-
 
     def printScrapedElements(self, elementsToScrape:dict[str,str]=dict()):
         prices:str=[]

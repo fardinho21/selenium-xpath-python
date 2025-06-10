@@ -51,13 +51,15 @@ def main():
     
     # bsScraper.scrapeBeautifulSoup_DynamicScroll(presenceElementCSS="div.row.ecomerce-items.ecomerce-items-scroll",\
     #     elementsToScrape=elementsToScrape)
-    print('Scraping Dynamic Content - Load by Pagination')
-    bsScraper = BeautifulSoupScraper(url=loadbypagination)
-    elementsToScrape:dict[str,str]={"h4":"price float-end card-title pull-right", "a":"title"}
+    # print('Scraping Dynamic Content - Load by Pagination')
+    # bsScraper = BeautifulSoupScraper(url=loadbypagination)
+    # elementsToScrape:dict[str,str]={"h4":"price float-end card-title pull-right", "a":"title"}
     
-    bsScraper.scrapeBeautifulSoup_DynamicPagination(presenceElementCSS="a[rel='next']",\
-        elementsToScrape=elementsToScrape)
-    
+    # bsScraper.scrapeBeautifulSoup_DynamicPagination(presenceElementCSS="a[rel='next']",\
+    #     elementsToScrape=elementsToScrape)
+    print('Scraping Dynamic Content - Static Content')
+    bsScraper = BeautifulSoupScraper(url="https://www.freep.com/news/")
+    bsScraper.scrapeBeautifulSoupStatic("div", "p1-title-spacer")
     bsScraper._quitDriver()
 
 
