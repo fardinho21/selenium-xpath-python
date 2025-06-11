@@ -17,19 +17,21 @@ class BeautifulSoupScraper(BaseScraper):
     def __init__(self, service:Service=None, options:Options=None, url:str=""):
         super().__init__(service, options, url)
         
-    def scrapeBeautifulSoupStatic(self, htmlElementTag:str="", htmlClassAttributes:str=""):
+    def scrapeBeautifulSoupStatic(self, presenceElementTagName:str="", presenceElementTagAttributes:str="", htmlClassAttributes:dict[str,str]=dict()):
         self.driver.get(self.url)
         # time.sleep(100)
-        WebDriverWait(self.driver, 10).until(EXPECTED_CONDS.presence_of_element_located((By.CSS_SELECTOR, htmlElementTag+"."+htmlClassAttributes)))
+        WebDriverWait(self.driver, 10).until(EXPECTED_CONDS.presence_of_element_located((By.CSS_SELECTOR, presenceElementTagName+"."+presenceElementTagAttributes)))
         html=self.driver.page_source
         self.soup=BeautifulSoup(html, 'html.parser')
         try:
             
-            if htmlClassAttributes:
-                elements: _QueryResults = self.soup.find_all(htmlElementTag,    class_=htmlClassAttributes.split(" "))
+            for tagName, classAttributes in htmlClassAttributes.items():
+                elements: _QueryResults = self.soup.find_all(tagName,class_=classAttributes.split(" "))
                 # print(elements)
                 for result in elements:
                     print(result.get_text())
+                    print(result.parent.parent.parent["href"])
+
         except Exception as E:
             print(E)
 
